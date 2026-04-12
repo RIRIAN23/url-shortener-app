@@ -1,0 +1,48 @@
+name: Deploy <name-of-the-service> Service #TODO: Replace name of the service
+
+on:
+  # TODO: REPLACE THIS WITH PROPER TRIGGER WORKFLOW
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-<name-of-the-service>-${{ github.ref }} #TODO: Replace name of the service
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and deploy frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        # TODO: FILL MISSING CONFIGURATION BELOW
+        with:
+          aws-access-key-id:
+          aws-secret-access-key:
+          aws-session-token:
+          aws-region:
+        # TODO: FILL MISSING CONFIGURATION ABOVE
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        # TODO: FILL MISSING ENV BELOW
+        env:
+          REGISTRY:
+          REPOSITORY:
+          IMAGE_TAG:
+        # TODO: FILL MISSING ENV ABOVE
+        run: |
+          # TODO: REPLACE THIS WITH MISSING DOCKER COMMANDS
+
+      - name: Force ECS deployment
+        run: |
+          # TODO: FILL MISSING ARGS BELOW
+          aws ecs update-service \
+          # TODO: FILL MISSING ARGS ABOVE

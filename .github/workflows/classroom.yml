@@ -1,0 +1,111 @@
+# WARNING: DO NOT MODIFY/EDIT/CHANGE OTHERWHISE YOU'LL LOSE YOUR POINTS
+
+name: Autograding Tests
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  autograding:
+    name: Run Autograding Tests
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # TRIGGER PATH CHECKS
+      - name: "[Trigger] deploy-analytics.yml"
+        id: trigger-analytics
+        uses: etamu-class/autograding-command-grader@v10
+        with:
+          test-name: "[Trigger] deploy-analytics.yml"
+          command: bash .github/scripts/check-trigger.sh deploy-analytics.yml analytics
+          timeout: 2
+          max-score: 50
+
+      - name: "[Trigger] deploy-api.yml"
+        id: trigger-api
+        uses: etamu-class/autograding-command-grader@v10
+        with:
+          test-name: "[Trigger] deploy-api.yml"
+          command: bash .github/scripts/check-trigger.sh deploy-api.yml api
+          timeout: 2
+          max-score: 50
+
+      - name: "[Trigger] deploy-frontend.yml"
+        id: trigger-frontend
+        uses: etamu-class/autograding-command-grader@v10
+        with:
+          test-name: "[Trigger] deploy-frontend.yml"
+          command: bash .github/scripts/check-trigger.sh deploy-frontend.yml frontend
+          timeout: 2
+          max-score: 50
+
+      # SECRETS CHECK
+      - name: "[Secrets] AWS secrets in files + repo"
+        id: secrets-check
+        uses: etamu-class/autograding-command-grader@v10
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          test-name: "[Secrets] AWS secrets in files + repo"
+          command: bash .github/scripts/check-secrets.sh
+          timeout: 3
+          max-score: 50
+
+      # WORKFLOW RUN SUCCESS
+      - name: "[Run] deploy-analytics.yml succeeded"
+        id: run-analytics
+        uses: etamu-class/autograding-command-grader@v10
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          test-name: "[Run] deploy-analytics.yml succeeded"
+          command: bash .github/scripts/check-workflow-run.sh deploy-analytics.yml
+          timeout: 5
+          max-score: 50
+
+      - name: "[Run] deploy-api.yml succeeded"
+        id: run-api
+        uses: etamu-class/autograding-command-grader@v10
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          test-name: "[Run] deploy-api.yml succeeded"
+          command: bash .github/scripts/check-workflow-run.sh deploy-api.yml
+          timeout: 5
+          max-score: 50
+
+      - name: "[Run] deploy-frontend.yml succeeded"
+        id: run-frontend
+        uses: etamu-class/autograding-command-grader@v10
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          test-name: "[Run] deploy-frontend.yml succeeded"
+          command: bash .github/scripts/check-workflow-run.sh deploy-frontend.yml
+          timeout: 5
+          max-score: 50
+
+      # REPORTER
+      - name: Autograding Reporter
+        uses: classroom-resources/autograding-grading-reporter@v1
+        if: always()
+        env:
+          TRIGGER-ANALYTICS_RESULTS: ${{ steps.trigger-analytics.outputs.result }}
+          TRIGGER-API_RESULTS: ${{ steps.trigger-api.outputs.result }}
+          TRIGGER-FRONTEND_RESULTS: ${{ steps.trigger-frontend.outputs.result }}
+          SECRETS-CHECK_RESULTS: ${{ steps.secrets-check.outputs.result }}
+          RUN-ANALYTICS_RESULTS: ${{ steps.run-analytics.outputs.result }}
+          RUN-API_RESULTS: ${{ steps.run-api.outputs.result }}
+          RUN-FRONTEND_RESULTS: ${{ steps.run-frontend.outputs.result }}
+        with:
+          runners: trigger-analytics,trigger-api,trigger-frontend,secrets-check,run-analytics,run-api,run-frontend
