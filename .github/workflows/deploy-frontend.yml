@@ -1,0 +1,56 @@
+name: Deploy frontend Service #TODO: Replace name of the service
+
+on:
+  # TODO: REPLACE THIS WITH PROPER TRIGGER WORKFLOW
+  push:
+    branches: ['main']
+    paths: ['frontend/**']
+
+concurrency:
+  group: deploy-frontend-${{ github.ref }} #TODO: Replace name of the service
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and deploy frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        # TODO: FILL MISSING CONFIGURATION BELOW
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+        # TODO: FILL MISSING CONFIGURATION ABOVE
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        # TODO: FILL MISSING ENV BELOW
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: lks-url-frontend
+          IMAGE_TAG: latest
+        # TODO: FILL MISSING ENV ABOVE
+        run: |
+          cd frontend
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          # TODO: REPLACE THIS WITH MISSING DOCKER COMMANDS
+
+      - name: Force ECS deployment
+        run: |
+          # TODO: FILL MISSING ARGS BELOW
+          aws ecs update-service \
+            --cluster lks-url-cluster \
+            --service lks-url-frontend-svc \
+            --force-new-deployment
+          # TODO: FILL MISSING ARGS ABOVE
