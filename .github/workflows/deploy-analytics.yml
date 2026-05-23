@@ -3,12 +3,8 @@ name: Deploy analytics Service #TODO: Replace name of the service
 on:
   # TODO: REPLACE THIS WITH PROPER TRIGGER WORKFLOW
   push:
-    branches:
-      - main
-    paths:
-      - 'analytics/**'
-      - '.github/workflows/deploy-analytics.yml'
-  workflow_dispatch:
+    branches: ['main']
+    paths: ['analytics/**']
 
 concurrency:
   group: deploy-analytics-${{ github.ref }} #TODO: Replace name of the service
@@ -57,5 +53,4 @@ jobs:
             --cluster lks-url-cluster \
             --service lks-url-analytics-svc \
             --force-new-deployment
-            --region ${{ secrets.AWS_REGION }}
           # TODO: FILL MISSING ARGS ABOVE
