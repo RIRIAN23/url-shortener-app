@@ -3,8 +3,12 @@ name: Deploy frontend Service #TODO: Replace name of the service
 on:
   # TODO: REPLACE THIS WITH PROPER TRIGGER WORKFLOW
   push:
-    branches: ['main']
-    paths: ['frontend/**']
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
 
 concurrency:
   group: deploy-frontend-${{ github.ref }} #TODO: Replace name of the service
@@ -52,5 +56,6 @@ jobs:
           aws ecs update-service \
             --cluster lks-url-cluster \
             --service lks-url-frontend-svc \
-            --force-new-deployment
+            --force-new-deployment \
+            --region ${{ secrets.AWS_REGION }}
           # TODO: FILL MISSING ARGS ABOVE
